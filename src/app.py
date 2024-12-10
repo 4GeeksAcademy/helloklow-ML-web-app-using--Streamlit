@@ -1,6 +1,6 @@
 import pickle
 import pandas as pd
-from flask import Flask, request, render_templat
+from flask import Flask, request, render_template
 
 # Load the model
 model_file='../models/model.pkl'
