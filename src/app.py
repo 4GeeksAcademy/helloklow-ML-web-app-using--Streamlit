@@ -3,7 +3,7 @@ import pandas as pd
 from flask import Flask, request, render_template
 
 # Load the model
-model_file='../models/model.pkl'
+model_file='models/model.pkl'
 
 with open(model_file, 'rb') as input_file:
     model=pickle.load(input_file)
@@ -11,42 +11,22 @@ with open(model_file, 'rb') as input_file:
 # Define the flask application
 app=Flask(__name__)
 
-# Dictionary to translate numerical predictions into
-# human readable strings
-class_dict={
-    '0': 'Not diabetic',
-    '1': 'Diabetic'
-}
-
 @app.route('/', methods = ['GET', 'POST'])
 def index():
     if request.method == 'POST':
+
+        Glucose = float(request.form["Glucose"])
+        Insulin = float(request.form["Insulin"])
+        BMI = float(request.form["BMI"])
+        Age = float(request.form["Age"])
         
-        # Get the data from the form
-        glucose=float(request.form['glucose'])
-        insulin=float(request.form['insulin'])
-        bmi=float(request.form['bmi'])
-        age=float(request.form['age'])
-        
-        # Format the data for inference
-        data=pd.DataFrame.from_dict({
-            'Glucose': [glucose],
-            'Insulin': [insulin],
-            'BMI': [bmi],
-            'Age': [age]
-        })
+        data = pd.DataFrame([[Glucose, Insulin, BMI, Age]], columns= ['Glucose', 'Insulin', 'BMI', 'Age'])
 
-        # Print out the input features to the terminal for troubleshooting
-        print(data.head())
+        prediction = model.predict(data)[0]
 
-        # Make the prediction
-        prediction=str(model.predict(data)[0])
-
-        # Convert the predicted value to a human readable string
-        pred_class=class_dict[prediction]
-
+        pred_class = "Diabetic" if prediction == 1 else "non-diabetic"
     else:
+        pred_class = None
 
-        pred_class=None
-    
+    # Return the result to flask
     return render_template('index.html', prediction=pred_class)
